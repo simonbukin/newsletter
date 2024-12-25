@@ -18,7 +18,7 @@ export class EmailService {
     await this.transporter.sendMail({
       from: process.env.EMAIL_FROM,
       to,
-      subject: `Your Daily Newsletter - ${new Date().toLocaleDateString()}`,
+      subject: `digest - ${new Date().toLocaleDateString()}`,
       html,
     });
   }
