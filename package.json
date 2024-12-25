@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test-hltv": "bun run src/test-hltv.ts"
+    "test-hltv": "bun run src/test-hltv.ts",
+    "test-vlr": "bun run src/test-vlr.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
