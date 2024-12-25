@@ -12,10 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: "18"
+          bun-version: latest
 
       - name: Install system dependencies
         run: |
@@ -23,12 +23,10 @@ jobs:
           sudo apt-get install -y chromium-browser
 
       - name: Install dependencies
-        run: |
-          npm install
-          npm install -g ts-node typescript
+        run: bun install
 
       - name: Generate and send newsletter
-        run: npm run generate-newsletter
+        run: bun run generate-newsletter
         env:
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
