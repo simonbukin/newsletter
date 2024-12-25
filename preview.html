@@ -1,33 +1,4 @@
-import nodemailer from "nodemailer";
-import { NewsletterContent } from "../types/content";
 
-export class EmailService {
-  private transporter;
-
-  constructor(emailConfig: {
-    host: string;
-    port: number;
-    auth: { user: string; pass: string };
-  }) {
-    this.transporter = nodemailer.createTransport(emailConfig);
-  }
-
-  async sendNewsletter(content: NewsletterContent, to: string) {
-    const html = this.buildTemplate(content);
-
-    await this.transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
-      subject: `digest - ${new Date().toLocaleDateString()}`,
-      html,
-    });
-  }
-
-  private buildTemplate(content: NewsletterContent): string {
-    // Helper to check if a section has content
-    const hasContent = (items: any[]) => items && items.length > 0;
-
-    return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -169,12 +140,7 @@ export class EmailService {
           <header class="header">
             <h1>digest</h1>
             <p>
-              ${new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              Wednesday, December 25, 2024
             </p>
             <p class="mt-2">
               <a href="https://newsminimalist.com" style="color: #4b5563; text-decoration: underline;">news</a> • 
@@ -184,61 +150,86 @@ export class EmailService {
           </header>
 
           <main>
-            ${Object.entries(content)
-              .filter(([_, items]) => hasContent(items))
-              .map(
-                ([source, items]) => `
+            
                 <details open>
                   <summary>
-                    ${source.toUpperCase()}
-                    <span class="source-count">[${items.length}]</span>
+                    TOP STORIES
+                    <span class="source-count">[2]</span>
                   </summary>
                   
-                  ${items
-                    .map(
-                      (item) => `
+                  
                     <article class="article">
                       <div class="article-content">
                         <div class="article-main">
-                          <a href="${item.url}" class="article-title">
-                            ${item.title}
+                          <a href="https://example.com" class="article-title">
+                            Sample News Article
                           </a>
-                          ${
-                            item.summary
-                              ? `
-                            <p class="article-summary">${item.summary}</p>
-                          `
-                              : ""
-                          }
+                          
+                            <p class="article-summary">This is a sample summary of the news article that demonstrates how the layout will look.</p>
+                          
                           <div class="article-time">
-                            <time>${new Date(item.timestamp).toLocaleTimeString(
-                              "en-US",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}</time>
+                            <time>02:27 PM</time>
                           </div>
                         </div>
-                        ${
-                          item.imageUrl
-                            ? `
-                          <img src="${item.imageUrl}" 
+                        
+                          <img src="https://picsum.photos/200" 
                                alt="" 
                                class="article-image"
                           />
-                        `
-                            : ""
-                        }
+                        
                       </div>
                     </article>
-                  `
-                    )
-                    .join("")}
+                  
+                    <article class="article">
+                      <div class="article-content">
+                        <div class="article-main">
+                          <a href="https://example.com" class="article-title">
+                            Another News Story
+                          </a>
+                          
+                            <p class="article-summary">Another sample summary to show how multiple articles look in the same section.</p>
+                          
+                          <div class="article-time">
+                            <time>02:27 PM</time>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    </article>
+                  
                 </details>
-              `
-              )
-              .join("")}
+              
+                <details open>
+                  <summary>
+                    TECHNOLOGY
+                    <span class="source-count">[1]</span>
+                  </summary>
+                  
+                  
+                    <article class="article">
+                      <div class="article-content">
+                        <div class="article-main">
+                          <a href="https://example.com" class="article-title">
+                            Tech News Sample
+                          </a>
+                          
+                            <p class="article-summary">A sample technology news article with some longer text to see how it wraps.</p>
+                          
+                          <div class="article-time">
+                            <time>02:27 PM</time>
+                          </div>
+                        </div>
+                        
+                          <img src="https://picsum.photos/200" 
+                               alt="" 
+                               class="article-image"
+                          />
+                        
+                      </div>
+                    </article>
+                  
+                </details>
+              
           </main>
 
           <footer class="footer">
@@ -247,6 +238,4 @@ export class EmailService {
         </div>
       </body>
       </html>
-    `;
-  }
-}
+    
