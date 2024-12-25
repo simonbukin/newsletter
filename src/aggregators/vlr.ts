@@ -3,6 +3,11 @@ import { ContentItem } from "../types/content";
 
 export class VLRAggregator {
   private browser: puppeteer.Browser | null = null;
+  private days: number;
+
+  constructor(days: number = 1) {
+    this.days = days;
+  }
 
   async initialize() {
     this.browser = await puppeteer.launch({
@@ -37,7 +42,7 @@ export class VLRAggregator {
 
     const content: ContentItem[] = [];
     const cutoffTime = new Date();
-    cutoffTime.setDate(cutoffTime.getDate() - 1); // 24 hours ago
+    cutoffTime.setDate(cutoffTime.getDate() - this.days); // Configurable time period
 
     try {
       console.log("VLR: Navigating to vlr.gg...");
@@ -92,7 +97,7 @@ export class VLRAggregator {
 
             if (articleDate < cutoffTime) {
               console.log(
-                "VLR: Reached articles older than 24 hours, stopping..."
+                `VLR: Reached articles older than ${this.days} days, stopping...`
               );
               break;
             }
@@ -119,7 +124,7 @@ export class VLRAggregator {
       console.error("VLR: Error during scraping:", error);
     } finally {
       console.log(
-        `VLR: Finished processing. Found ${content.length} articles within last 24 hours`
+        `VLR: Finished processing. Found ${content.length} articles within last ${this.days} days`
       );
       await page.close();
     }

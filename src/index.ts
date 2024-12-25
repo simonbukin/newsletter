@@ -4,35 +4,59 @@ import { VLRAggregator } from "./aggregators/vlr";
 import { EmailService } from "./utils/emailService";
 import { NewsletterContent } from "./types/content";
 import dotenv from "dotenv";
+import { parseArgs } from "node:util";
+import { InstagramAggregator } from "./aggregators/instagram";
 
 dotenv.config();
 
-async function generateNewsletter() {
-  const hltvAggregator = new HLTVAggregator();
-  const vlrAggregator = new VLRAggregator();
-  const hackernewsAggregator = new HackerNewsAggregator();
+interface NewsletterConfig {
+  sources: string[];
+  period: "daily" | "weekly" | "monthly";
+  days: number;
+}
+
+const DEFAULT_CONFIG: Record<string, NewsletterConfig> = {
+  daily: {
+    sources: ["hackernews"],
+    period: "daily",
+    days: 1,
+  },
+  weekly: {
+    sources: ["hltv", "vlr"],
+    period: "weekly",
+    days: 7,
+  },
+};
+
+async function generateNewsletter(config: NewsletterConfig) {
+  const content: NewsletterContent = {
+    hltv: [],
+    vlr: [],
+    hackernews: [],
+    instagram: [],
+    youtube: [],
+  };
 
   try {
-    await hltvAggregator.initialize();
-    await vlrAggregator.initialize();
+    // Only initialize aggregators that are needed
+    if (config.sources.includes("hackernews")) {
+      const hackernewsAggregator = new HackerNewsAggregator(config.days);
+      content.hackernews = await hackernewsAggregator.getContent();
+    }
 
-    const hltvContent = await hltvAggregator.getContent();
-    const vlrContent = await vlrAggregator.getContent();
-    const hackernewsContent = await hackernewsAggregator.getContent();
+    if (config.sources.includes("hltv")) {
+      const hltvAggregator = new HLTVAggregator(config.days);
+      await hltvAggregator.initialize();
+      content.hltv = await hltvAggregator.getContent();
+      await hltvAggregator.close();
+    }
 
-    const newsletterContent: NewsletterContent = {
-      hltv: hltvContent,
-      vlr: vlrContent,
-      hackernews: hackernewsContent,
-      instagram: [],
-      youtube: [],
-    };
-
-    console.log("Email configuration:", {
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      user: process.env.EMAIL_USER?.substring(0, 3) + "...",
-    });
+    if (config.sources.includes("vlr")) {
+      const vlrAggregator = new VLRAggregator(config.days);
+      await vlrAggregator.initialize();
+      content.vlr = await vlrAggregator.getContent();
+      await vlrAggregator.close();
+    }
 
     const emailService = new EmailService({
       host: process.env.EMAIL_HOST || "smtp.gmail.com",
@@ -47,22 +71,36 @@ async function generateNewsletter() {
       },
     });
 
-    console.log("Newsletter content collected:", {
-      hltvCount: hltvContent.length,
-      vlrCount: vlrContent.length,
-      hackernewsCount: hackernewsContent.length,
-    });
-
-    await emailService.sendNewsletter(newsletterContent, process.env.EMAIL_TO!);
-
-    console.log("Newsletter generated and sent successfully!");
+    await emailService.sendNewsletter(
+      content,
+      process.env.EMAIL_TO!,
+      config.period
+    );
   } catch (error) {
     console.error("Error generating newsletter:", error);
     throw error;
-  } finally {
-    await hltvAggregator.close();
-    await vlrAggregator.close();
   }
 }
 
-generateNewsletter();
+// Parse command line arguments
+const { values } = parseArgs({
+  options: {
+    sources: {
+      type: "string",
+    },
+    period: {
+      type: "string",
+    },
+  },
+});
+
+const sources = values.sources?.split(",") || [];
+const period = (values.period as "daily" | "weekly" | "monthly") || "daily";
+
+// Use default config or override with CLI args
+const config = {
+  ...DEFAULT_CONFIG[period],
+  sources: sources.length ? sources : DEFAULT_CONFIG[period].sources,
+};
+
+generateNewsletter(config);

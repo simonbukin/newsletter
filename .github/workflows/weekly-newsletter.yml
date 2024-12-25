@@ -1,0 +1,36 @@
+name: Weekly Newsletter
+
+on:
+  schedule:
+    - cron: "0 6 * * 6" # Runs at 6 AM UTC every Saturday
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  send-gaming:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate and send newsletter
+        run: bun run generate-newsletter --sources=hltv,vlr --period=weekly
+        env:
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }} 

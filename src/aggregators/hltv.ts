@@ -3,6 +3,11 @@ import { ContentItem } from "../types/content";
 
 export class HLTVAggregator {
   private browser: puppeteer.Browser | null = null;
+  private days: number;
+
+  constructor(days: number = 1) {
+    this.days = days;
+  }
 
   async initialize() {
     this.browser = await puppeteer.launch({
@@ -29,6 +34,8 @@ export class HLTVAggregator {
 
     const page = await this.browser!.newPage();
     const content: ContentItem[] = [];
+    const cutoffTime = new Date();
+    cutoffTime.setDate(cutoffTime.getDate() - this.days);
 
     // Add console message listeners
     page.on("console", (msg) => console.log("Browser console:", msg.text()));
@@ -54,7 +61,7 @@ export class HLTVAggregator {
         console.log("Cookie consent button not found or already accepted");
       }
 
-      // Get all news items from Today's news section
+      // Get all news items from the news section
       const newsItems = await page.evaluate(() => {
         const todaysNewsHeading = Array.from(
           document.querySelectorAll("h2")
@@ -73,15 +80,21 @@ export class HLTVAggregator {
         }));
       });
 
-      // Add items to content array
+      // Filter items by date before adding to content array
+      const now = new Date();
       content.push(
-        ...newsItems.map((item) => ({
-          title: item.title,
-          url: item.url,
-          source: "hltv" as const,
-          timestamp: new Date(), // Current time since we're getting today's news
-          summary: "News Article",
-        }))
+        ...newsItems
+          .filter(item => {
+            const itemDate = new Date();
+            return itemDate >= cutoffTime;
+          })
+          .map((item) => ({
+            title: item.title,
+            url: item.url,
+            source: "hltv" as const,
+            timestamp: new Date(),
+            summary: "News Article",
+          }))
       );
 
       console.log(

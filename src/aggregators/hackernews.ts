@@ -2,10 +2,10 @@ import { ContentItem } from "../types/content";
 
 export class HackerNewsAggregator {
   private baseUrl = "https://hacker-news.firebaseio.com/v0";
-  private daysToLookBack: number;
+  private days: number;
 
-  constructor(daysToLookBack: number = 1) {
-    this.daysToLookBack = daysToLookBack;
+  constructor(days: number = 1) {
+    this.days = days;
   }
 
   async getContent(): Promise<ContentItem[]> {
@@ -42,8 +42,8 @@ export class HackerNewsAggregator {
       // Filter out failed stories before processing
       const validStories = stories.filter((story) => story !== null);
 
-      // Filter stories by date and sort by score
-      const cutoffTime = Date.now() / 1000 - this.daysToLookBack * 24 * 60 * 60;
+      // Filter stories by configured time period
+      const cutoffTime = Date.now() / 1000 - this.days * 24 * 60 * 60;
       const recentStories = validStories
         .filter((story) => story.time > cutoffTime)
         .sort((a, b) => b.score - a.score)

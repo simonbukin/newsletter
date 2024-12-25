@@ -4,13 +4,15 @@
     "test-vlr": "bun run src/test-vlr.ts",
     "test-hackernews": "bun run src/test-hackernews.ts",
     "test-email-template": "bun run src/utils/testEmailTemplate.ts",
-    "generate-newsletter": "bun run src/index.ts"
+    "generate-newsletter": "bun run src/index.ts",
+    "newsletter:daily": "bun run src/index.ts --sources=hackernews --period=daily",
+    "newsletter:weekly": "bun run src/index.ts --sources=hltv,vlr --period=weekly",
   },
   "dependencies": {
+    "@types/node": "^18.0.0",
     "dotenv": "^16.4.7",
     "nodemailer": "^6.9.16",
-    "puppeteer": "^23.11.1",
-    "@types/node": "^18.0.0"
+    "puppeteer": "^23.11.1"
   },
   "type": "module"
 }
