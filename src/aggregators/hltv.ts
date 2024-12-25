@@ -28,16 +28,15 @@ export class HLTVAggregator {
     }
 
     const page = await this.browser!.newPage();
-
-    // Add random user agent to avoid blocking
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    );
-
     const content: ContentItem[] = [];
 
+    // Add console message listeners
+    page.on("console", (msg) => console.log("Browser console:", msg.text()));
+    page.on("error", (err) => console.error("Browser error:", err));
+    page.on("pageerror", (err) => console.error("Page error:", err));
+
     try {
-      // Navigate to HLTV
+      console.log("Starting HLTV content aggregation...");
       await page.goto("https://www.hltv.org", {
         waitUntil: "networkidle0",
         timeout: 30000,
@@ -55,34 +54,38 @@ export class HLTVAggregator {
         console.log("Cookie consent button not found or already accepted");
       }
 
-      // Get news
-      const news = await page.evaluate(() => {
-        const newsElements = document.querySelectorAll("a[href^='/news/']");
-        return Array.from(newsElements).map((article) => {
-          const href = article.getAttribute("href") || "";
-          const slug = href.split("/").pop() || ""; // Get last part after final slash
-          const title = slug
-            .split("-")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
-          const url = "https://www.hltv.org" + href;
+      // Get all news items from Today's news section
+      const newsItems = await page.evaluate(() => {
+        const todaysNewsHeading = Array.from(
+          document.querySelectorAll("h2")
+        ).find((h2) => h2.textContent?.trim() === "Today's news");
 
-          return {
-            title: title || "",
-            url: url || "",
-          };
-        });
+        if (!todaysNewsHeading) return [];
+
+        const newsContainer = todaysNewsHeading.nextElementSibling;
+        if (!newsContainer) return [];
+
+        const newsLinks = newsContainer.querySelectorAll("a[href^='/news/']");
+
+        return Array.from(newsLinks).map((link) => ({
+          title: link.textContent?.trim() || "",
+          url: "https://www.hltv.org" + (link.getAttribute("href") || ""),
+        }));
       });
 
-      // Transform news to ContentItems
+      // Add items to content array
       content.push(
-        ...news.map((item) => ({
+        ...newsItems.map((item) => ({
           title: item.title,
           url: item.url,
           source: "hltv" as const,
-          timestamp: new Date(item.timestamp),
+          timestamp: new Date(), // Current time since we're getting today's news
           summary: "News Article",
         }))
+      );
+
+      console.log(
+        `Successfully collected ${content.length} articles from Today's news`
       );
     } catch (error) {
       console.error("Error scraping HLTV:", error);
