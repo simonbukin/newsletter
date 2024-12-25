@@ -23,14 +23,16 @@ jobs:
           sudo apt-get install -y chromium-browser
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install -g ts-node typescript
 
-      - name: Build and send newsletter
-        run: npm run start
+      - name: Generate and send newsletter
+        run: npm run generate-newsletter
         env:
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
