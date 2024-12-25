@@ -28,13 +28,29 @@ async function generateNewsletter() {
       youtube: [],
     };
 
+    console.log("Email configuration:", {
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      user: process.env.EMAIL_USER?.substring(0, 3) + "...",
+    });
+
     const emailService = new EmailService({
-      host: process.env.EMAIL_HOST!,
-      port: parseInt(process.env.EMAIL_PORT!),
+      host: process.env.EMAIL_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.EMAIL_PORT || "587"),
       auth: {
         user: process.env.EMAIL_USER!,
         pass: process.env.EMAIL_PASS!,
       },
+      secure: false,
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    console.log("Newsletter content collected:", {
+      hltvCount: hltvContent.length,
+      vlrCount: vlrContent.length,
+      hackernewsCount: hackernewsContent.length,
     });
 
     await emailService.sendNewsletter(newsletterContent, process.env.EMAIL_TO!);
