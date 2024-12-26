@@ -6,7 +6,7 @@
     "test-email-template": "bun run src/utils/testEmailTemplate.ts",
     "generate-newsletter": "bun run src/index.ts",
     "newsletter:daily": "bun run src/index.ts --sources=hackernews --period=daily",
-    "newsletter:weekly": "bun run src/index.ts --sources=hltv,vlr --period=weekly",
+    "newsletter:weekly": "bun run src/index.ts --sources=hltv,vlr --period=weekly"
   },
   "dependencies": {
     "@types/node": "^18.0.0",
