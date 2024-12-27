@@ -178,8 +178,8 @@ export class EmailService {
             </p>
             <p class="mt-2">
               <a href="https://newsminimalist.com" style="color: #4b5563; text-decoration: underline;">news</a> • 
-              <a href="https://youtube.com/@newsminimalist" style="color: #4b5563; text-decoration: underline;">youtube</a> • 
-              <a href="https://instagram.com/newsminimalist" style="color: #4b5563; text-decoration: underline;">instagram</a>
+              <a href="https://www.youtube.com/playlist?list=WL" style="color: #4b5563; text-decoration: underline;">youtube</a> • 
+              <a href="https://instagram.com/" style="color: #4b5563; text-decoration: underline;">instagram</a>
             </p>
           </header>
 
@@ -196,7 +196,7 @@ export class EmailService {
                   
                   ${items
                     .map(
-                      (item) => `
+                      (item: any) => `
                     <article class="article">
                       <div class="article-content">
                         <div class="article-main">
